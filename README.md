@@ -1,144 +1,207 @@
 # Enigma
 
-Enigma is a desktop application for local file encryption and PDF password management. It is built with React 18, Tailwind CSS and Electron, so it can run as a desktop app while keeping the main workflow focused on files stored on the user's machine.
+```text
+███████╗███╗   ██╗██╗ ██████╗ ███╗   ███╗ █████╗
+██╔════╝████╗  ██║██║██╔════╝ ████╗ ████║██╔══██╗
+█████╗  ██╔██╗ ██║██║██║  ███╗██╔████╔██║███████║
+██╔══╝  ██║╚██╗██║██║██║   ██║██║╚██╔╝██║██╔══██║
+███████╗██║ ╚████║██║╚██████╔╝██║ ╚═╝ ██║██║  ██║
+╚══════╝╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝
 
-The project provides two main areas:
+        Lokalny sejf na pliki i hasła PDF
+```
 
-- general file encryption and decryption using password-derived AES-256-CBC keys,
-- PDF tools for adding, removing and changing document passwords.
+Enigma to desktopowa aplikacja do lokalnego szyfrowania plików oraz zarządzania hasłami dokumentów PDF. Projekt jest zbudowany w React 18, Tailwind CSS i Electron, dzięki czemu działa jako aplikacja okienkowa, a główny przepływ pracy pozostaje skupiony na plikach zapisanych na komputerze użytkownika.
 
-## Features
+```text
++------------------+      +-------------------+      +------------------+
+|  Plik lokalny    | ---> |  Hasło użytkownika | ---> |  Plik .enigma    |
++------------------+      +-------------------+      +------------------+
+        |                         |                           |
+        |                         v                           |
+        |              PBKDF2 + AES-256-CBC                   |
+        +-----------------------------------------------------+
+```
 
-- Encrypt local files into `.enigma` containers.
-- Decrypt `.enigma` files back to their original file names.
-- Drag-and-drop file selection.
-- Password confirmation and basic password strength feedback.
-- PDF password operations:
-  - add a password to a PDF,
-  - remove a password from a protected PDF,
-  - change an existing PDF password,
-  - create encrypted PDF output files.
-- Electron desktop packaging for Windows.
+Projekt udostępnia dwa główne obszary:
 
-## Technology Stack
+- szyfrowanie i odszyfrowywanie zwykłych plików przy użyciu kluczy AES-256-CBC wyprowadzanych z hasła,
+- narzędzia PDF do dodawania, usuwania i zmiany haseł dokumentów.
 
-- React 18
-- Electron 27
-- Tailwind CSS
-- Web Crypto API
-- Node.js Crypto API for Electron IPC helpers
-- `pdf-lib` for PDF password operations
-- Create React App tooling
-- Electron Builder
+## Funkcje
 
-## Requirements
+```text
+┌─────────────────────────────┐
+│ SZYFROWANIE                 │
+├─────────────────────────────┤
+│ .enigma                     │
+│ drag and drop               │
+│ potwierdzanie hasła         │
+│ ocena siły hasła            │
+└─────────────────────────────┘
 
-- Node.js 14 or newer
-- npm
-- Windows, macOS or Linux for development
+┌─────────────────────────────┐
+│ PDF                         │
+├─────────────────────────────┤
+│ dodaj hasło                 │
+│ usuń hasło                  │
+│ zmień hasło                 │
+│ zapisz zaszyfrowany wynik   │
+└─────────────────────────────┘
+```
 
-Windows packaging is configured through Electron Builder with NSIS and portable targets.
+- Szyfrowanie plików lokalnych do kontenerów `.enigma`.
+- Odszyfrowywanie plików `.enigma` do ich oryginalnych nazw.
+- Wybór pliku przez kliknięcie albo przeciągnięcie do aplikacji.
+- Potwierdzanie hasła i podstawowa informacja o sile hasła.
+- Operacje na hasłach PDF:
+  - dodanie hasła do dokumentu PDF,
+  - usunięcie hasła z chronionego dokumentu PDF,
+  - zmiana istniejącego hasła PDF,
+  - zapis nowego, zaszyfrowanego pliku PDF.
+- Pakowanie aplikacji desktopowej dla Windows.
 
-## Getting Started
+## Technologie
 
-Install dependencies:
+| Warstwa | Technologia |
+| --- | --- |
+| Interfejs | React 18 |
+| Aplikacja desktopowa | Electron 27 |
+| Style | Tailwind CSS |
+| Kryptografia w rendererze | Web Crypto API |
+| Pomocnicza kryptografia IPC | Node.js Crypto API |
+| Obsługa PDF | `pdf-lib` |
+| Narzędzia build | Create React App |
+| Pakowanie | Electron Builder |
+
+## Wymagania
+
+- Node.js 14 lub nowszy.
+- npm.
+- Windows, macOS albo Linux do pracy deweloperskiej.
+
+Pakowanie dla Windows jest skonfigurowane w Electron Builder z targetami NSIS oraz portable.
+
+## Szybki Start
+
+```text
+┌──────────────┐
+│ npm install  │  instalacja zależności
+└──────┬───────┘
+       v
+┌──────────────┐
+│ npm start    │  uruchomienie Reacta w przeglądarce
+└──────┬───────┘
+       v
+┌──────────────────────┐
+│ npm run electron-dev │  pełna aplikacja Electron
+└──────────────────────┘
+```
+
+Zainstaluj zależności:
 
 ```bash
 npm install
 ```
 
-Run the React development server in a browser:
+Uruchom serwer deweloperski React w przeglądarce:
 
 ```bash
 npm start
 ```
 
-Run the full Electron development app:
+Uruchom pełną aplikację Electron w trybie deweloperskim:
 
 ```bash
 npm run electron-dev
 ```
 
-Create a production React build:
+Utwórz produkcyjny build React:
 
 ```bash
 npm run build
 ```
 
-Build the Electron application:
+Zbuduj aplikację Electron:
 
 ```bash
 npm run electron-build
 ```
 
-Build a Windows installer without publishing:
+Zbuduj instalator Windows bez publikowania:
 
 ```bash
 npm run package-win
 ```
 
-## Available Scripts
+## Dostępne Skrypty
 
-| Command | Description |
+| Komenda | Opis |
 | --- | --- |
-| `npm start` | Starts the Create React App development server. |
-| `npm run electron-dev` | Starts React and launches Electron after `localhost:3000` is ready. |
-| `npm run build` | Builds the production React bundle into `build/`. |
-| `npm run electron` | Launches Electron against the configured app entry. |
-| `npm run electron-build` | Builds React and packages the Electron app. |
-| `npm run package-win` | Creates a Windows NSIS installer without publishing. |
-| `npm test` | Runs the Create React App test runner. |
+| `npm start` | Uruchamia serwer deweloperski Create React App. |
+| `npm run electron-dev` | Uruchamia Reacta i startuje Electron po wykryciu `localhost:3000`. |
+| `npm run build` | Buduje produkcyjny pakiet React do katalogu `build/`. |
+| `npm run electron` | Uruchamia Electron z aktualnie skonfigurowanym wejściem aplikacji. |
+| `npm run electron-build` | Buduje Reacta i pakuje aplikację Electron. |
+| `npm run package-win` | Tworzy instalator Windows NSIS bez publikowania. |
+| `npm test` | Uruchamia test runner Create React App. |
 
-## Usage
+## Użycie
 
-### Encrypting Files
+### Szyfrowanie Plików
 
-1. Open the **Szyfruj** tab.
-2. Select or drag a supported file into the upload area.
-3. Enter and confirm the password.
-4. Click **Szyfruj plik**.
-5. The encrypted file is downloaded with the `.enigma` extension.
+1. Otwórz kartę **Szyfruj**.
+2. Wybierz plik albo przeciągnij go w obszar przesyłania.
+3. Wpisz i potwierdź hasło.
+4. Kliknij **Szyfruj plik**.
+5. Zaszyfrowany plik zostanie pobrany z rozszerzeniem `.enigma`.
 
-The encrypted output stores the salt, IV and ciphertext in a single binary file:
+Zaszyfrowany wynik przechowuje sól, IV i szyfrogram w jednym pliku binarnym:
 
 ```text
-[32-byte salt][16-byte IV][encrypted payload]
+[32 bajty soli][16 bajtów IV][zaszyfrowana zawartość]
 ```
 
-### Decrypting Files
+### Odszyfrowywanie Plików
 
-1. Open the **Odszyfruj** tab.
-2. Select a `.enigma` file.
-3. Enter the password used during encryption.
-4. Click **Odszyfruj plik**.
-5. The decrypted file is downloaded under the original file name.
+1. Otwórz kartę **Odszyfruj**.
+2. Wybierz plik `.enigma`.
+3. Wpisz hasło użyte podczas szyfrowania.
+4. Kliknij **Odszyfruj plik**.
+5. Odszyfrowany plik zostanie pobrany pod oryginalną nazwą.
 
-### PDF Tools
+### Narzędzia PDF
 
-Open the **PDF** tab to work with document passwords. The PDF tools support adding a new password, removing an existing password and changing a password on a protected PDF.
+Otwórz kartę **PDF**, aby pracować z hasłami dokumentów. Narzędzia PDF pozwalają dodać nowe hasło, usunąć istniejące hasło oraz zmienić hasło w chronionym dokumencie.
 
-## Security Model
+```text
+PDF bez hasła  ── dodaj hasło ──>  PDF chroniony
+PDF chroniony  ── usuń hasło  ──>  PDF bez hasła
+PDF chroniony  ── zmień hasło ──>  PDF z nowym hasłem
+```
 
-General file encryption uses:
+## Model Bezpieczeństwa
 
-- PBKDF2 with SHA-256,
-- 100,000 derivation iterations,
-- 32-byte random salt per file,
-- 16-byte random IV per file,
-- AES-256-CBC encryption.
+Ogólne szyfrowanie plików używa:
 
-Passwords, derived keys, salts, IVs and decrypted file contents should never be logged or persisted. The application generates encrypted output locally and does not require user accounts or external services.
+- PBKDF2 z SHA-256,
+- 100 000 iteracji wyprowadzania klucza,
+- losowej 32-bajtowej soli dla każdego pliku,
+- losowego 16-bajtowego IV dla każdego pliku,
+- szyfrowania AES-256-CBC.
 
-Current implementation note: AES-CBC provides encryption but does not provide built-in authentication. For stronger tamper detection, a future version should use authenticated encryption such as AES-GCM or add an HMAC over the encrypted payload.
+Hasła, klucze pochodne, sole, IV oraz odszyfrowana zawartość plików nie powinny być logowane ani zapisywane poza zamierzonym wynikiem działania aplikacji. Enigma generuje zaszyfrowane pliki lokalnie i nie wymaga kont użytkowników ani usług zewnętrznych.
 
-## Project Structure
+Uwaga implementacyjna: AES-CBC zapewnia szyfrowanie, ale nie daje wbudowanego uwierzytelnienia danych. Dla mocniejszego wykrywania modyfikacji przyszła wersja powinna używać szyfrowania uwierzytelnionego, na przykład AES-GCM, albo dodać HMAC dla zaszyfrowanej zawartości.
+
+## Struktura Projektu
 
 ```text
 Enigma/
 ├── public/
-│   ├── electron.js          # Electron main process
-│   ├── preload.js           # Secure IPC bridge
-│   └── index.html           # HTML template
+│   ├── electron.js          # główny proces Electron
+│   ├── preload.js           # bezpieczny most IPC
+│   └── index.html           # szablon HTML
 ├── src/
 │   ├── components/
 │   │   ├── DecryptSection.js
@@ -151,59 +214,59 @@ Enigma/
 │   │   ├── PDFPasswordManager.js
 │   │   └── PDFSection.js
 │   ├── utils/
-│   │   └── pdfUtils.js      # PDF password helpers
-│   ├── App.js               # Main React application
-│   ├── index.js             # React entry point
-│   └── index.css            # Tailwind styles
+│   │   └── pdfUtils.js      # pomocnicze funkcje PDF
+│   ├── App.js               # główna aplikacja React
+│   ├── index.js             # punkt wejścia React
+│   └── index.css            # style Tailwind
 ├── package.json
 ├── tailwind.config.js
 ├── postcss.config.js
 └── README.md
 ```
 
-Generated directories such as `build/`, `dist/` and `node_modules/` should not be edited manually.
+Katalogi generowane, takie jak `build/`, `dist/` i `node_modules/`, nie powinny być edytowane ręcznie.
 
-## Development Notes
+## Notatki Deweloperskie
 
-- Keep React components functional and hook-based.
-- Keep one primary component per file.
-- Prefer Tailwind utility classes over new global CSS.
-- Preserve Electron security settings: `nodeIntegration: false`, `contextIsolation: true` and renderer access through `preload.js`.
-- Do not use `eval`, unsafe `innerHTML` or password/key logging.
-- Add focused tests near the code they cover when changing encryption, PDF handling or IPC behavior.
+- Komponenty React powinny być funkcyjne i oparte na hookach.
+- Jeden plik powinien zawierać jeden główny komponent.
+- Preferuj klasy narzędziowe Tailwind zamiast nowych globalnych stylów CSS.
+- Zachowuj ustawienia bezpieczeństwa Electron: `nodeIntegration: false`, `contextIsolation: true` i dostęp renderera przez `preload.js`.
+- Nie używaj `eval`, niebezpiecznego `innerHTML` ani logowania haseł i kluczy.
+- Przy zmianach w szyfrowaniu, PDF albo IPC dodawaj skupione testy blisko kodu, który obejmują.
 
-## Testing
+## Testowanie
 
-Run the test runner:
+Uruchom testy:
 
 ```bash
 npm test
 ```
 
-For changes touching encryption, decryption, PDF processing or Electron IPC, also verify the workflow manually:
+Dla zmian dotyczących szyfrowania, odszyfrowywania, PDF albo Electron IPC sprawdź też ręcznie przepływ w aplikacji:
 
 ```bash
 npm run electron-dev
 ```
 
-Recommended manual checks:
+Zalecane sprawdzenia ręczne:
 
-- encrypt and decrypt a sample file,
-- try an incorrect password during decryption,
-- add a password to a PDF,
-- remove a password from a protected PDF,
-- change a PDF password and reopen the generated file.
+- zaszyfruj i odszyfruj przykładowy plik,
+- spróbuj odszyfrować plik błędnym hasłem,
+- dodaj hasło do PDF,
+- usuń hasło z chronionego PDF,
+- zmień hasło PDF i otwórz wygenerowany plik.
 
-## Packaging
+## Pakowanie
 
-The Electron Builder configuration in `package.json` defines:
+Konfiguracja Electron Builder w `package.json` definiuje:
 
-- app id: `com.enigma.encryptor`,
-- product name: `Enigma`,
-- Windows targets: NSIS installer and portable build.
+- identyfikator aplikacji: `com.enigma.encryptor`,
+- nazwę produktu: `Enigma`,
+- targety Windows: instalator NSIS i wersja portable.
 
-Build artifacts are generated in `dist/`.
+Artefakty builda są generowane w katalogu `dist/`.
 
-## License
+## Licencja
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Projekt jest udostępniany na licencji MIT. Szczegóły znajdują się w pliku [LICENSE](LICENSE).
