@@ -90,6 +90,23 @@ window.electronAPI.encryptFile(filePath, password)
 window.electronAPI.decryptFile(encryptedData, password)
 ```
 
+## ☁️ Backend Supabase
+
+Warstwa webowa używa Supabase, jeśli ustawione są zmienne:
+
+```bash
+REACT_APP_SUPABASE_URL=...
+REACT_APP_SUPABASE_ANON_KEY=...
+```
+
+Schemat bazy znajduje się w `supabase/schema.sql`. Tabela `document_history` ma włączone RLS i polityki ograniczające odczyt, zapis oraz usuwanie do aktualnie zalogowanego użytkownika. Jeżeli zmienne nie są ustawione, aplikacja przełącza się na lokalny fallback w `localStorage`.
+
+Publikacja web:
+
+```bash
+npm run deploy:web
+```
+
 ## 📝 Zasady kodowania
 
 ### Komponenty React

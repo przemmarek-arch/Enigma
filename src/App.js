@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import EncryptSection from './components/EncryptSection';
 import DecryptSection from './components/DecryptSection';
 import PDFSection from './components/PDFSection';
@@ -53,43 +53,96 @@ const tabs = [
 ];
 
 function App() {
-  const [user, setUser] = useState(() => getSessionUser());
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('encrypt');
-  const [history, setHistory] = useState(() => {
-    const sessionUser = getSessionUser();
-    return sessionUser ? getHistory(sessionUser.id) : [];
-  });
+  const [history, setHistory] = useState([]);
+  const [loadingSession, setLoadingSession] = useState(true);
+  const [historyError, setHistoryError] = useState('');
 
-  const handleAuth = (nextUser) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSession = async () => {
+      const sessionUser = await getSessionUser();
+
+      if (!isMounted) {
+        return;
+      }
+
+      setUser(sessionUser);
+
+      if (sessionUser) {
+        try {
+          setHistory(await getHistory(sessionUser.id));
+        } catch (error) {
+          setHistoryError(error.message);
+        }
+      }
+
+      setLoadingSession(false);
+    };
+
+    loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleAuth = async (nextUser) => {
     setUser(nextUser);
-    setHistory(getHistory(nextUser.id));
+    setHistoryError('');
+    try {
+      setHistory(await getHistory(nextUser.id));
+    } catch (error) {
+      setHistoryError(error.message);
+    }
     setActiveTab('encrypt');
   };
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     setUser(null);
     setHistory([]);
+    setHistoryError('');
     setActiveTab('encrypt');
   };
 
-  const handleHistoryEvent = (entry) => {
+  const handleHistoryEvent = async (entry) => {
     if (!user) {
       return;
     }
 
-    const nextEntry = addHistoryEntry(user.id, entry);
-    setHistory((currentHistory) => [nextEntry, ...currentHistory].slice(0, 100));
+    try {
+      const nextEntry = await addHistoryEntry(user.id, entry);
+      setHistory((currentHistory) => [nextEntry, ...currentHistory].slice(0, 100));
+      setHistoryError('');
+    } catch (error) {
+      setHistoryError(error.message);
+    }
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (!user) {
       return;
     }
 
-    clearHistory(user.id);
+    await clearHistory(user.id);
     setHistory([]);
   };
+
+  if (loadingSession) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] text-zinc-950">
+        <Header />
+        <main className="mx-auto flex min-h-[60vh] w-full max-w-7xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+          <div className="rounded-lg border border-white/70 bg-white/90 px-6 py-5 text-sm font-semibold text-zinc-700 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+            Ładowanie sesji...
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -149,7 +202,7 @@ function App() {
           {activeTab === 'encrypt' && <EncryptSection onHistoryEvent={handleHistoryEvent} />}
           {activeTab === 'decrypt' && <DecryptSection onHistoryEvent={handleHistoryEvent} />}
           {activeTab === 'pdf' && <PDFSection onHistoryEvent={handleHistoryEvent} />}
-          {activeTab === 'history' && <HistoryPanel history={history} onClear={handleClearHistory} />}
+          {activeTab === 'history' && <HistoryPanel history={history} error={historyError} onClear={handleClearHistory} />}
         </div>
       </main>
     </div>

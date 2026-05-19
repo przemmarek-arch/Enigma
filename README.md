@@ -60,6 +60,9 @@ Projekt udostępnia dwa główne obszary:
   - zmiana istniejącego hasła PDF,
   - zapis nowego, zaszyfrowanego pliku PDF.
 - Pakowanie aplikacji desktopowej dla Windows.
+- Rejestracja i logowanie użytkowników.
+- Historia operacji szyfrowania zapisywana per użytkownik.
+- Opcjonalny backend Supabase dla synchronizacji kont i historii między urządzeniami.
 
 ## Technologie
 
@@ -71,6 +74,7 @@ Projekt udostępnia dwa główne obszary:
 | Kryptografia w rendererze | Web Crypto API |
 | Pomocnicza kryptografia IPC | Node.js Crypto API |
 | Obsługa PDF | `pdf-lib` |
+| Backend webowy | Supabase |
 | Narzędzia build | Create React App |
 | Pakowanie | Electron Builder |
 
@@ -141,6 +145,7 @@ npm run package-win
 | `npm start` | Uruchamia serwer deweloperski Create React App. |
 | `npm run electron-dev` | Uruchamia Reacta i startuje Electron po wykryciu `localhost:3000`. |
 | `npm run build` | Buduje produkcyjny pakiet React do katalogu `build/`. |
+| `npm run deploy:web` | Buduje wersję webową i publikuje katalog `build/` na gałąź `gh-pages`. |
 | `npm run electron` | Uruchamia Electron z aktualnie skonfigurowanym wejściem aplikacji. |
 | `npm run electron-build` | Buduje Reacta i pakuje aplikację Electron. |
 | `npm run package-win` | Tworzy instalator Windows NSIS bez publikowania. |
@@ -179,6 +184,18 @@ PDF bez hasła  ── dodaj hasło ──>  PDF chroniony
 PDF chroniony  ── usuń hasło  ──>  PDF bez hasła
 PDF chroniony  ── zmień hasło ──>  PDF z nowym hasłem
 ```
+
+### Konta i Historia
+
+Aplikacja ma panel rejestracji/logowania oraz zakładkę **Historia**. Historia zapisuje wyłącznie metadane udanych operacji: typ akcji, nazwę pliku, nazwę wyniku, rozmiar, typ MIME i datę. Hasła oraz zawartość dokumentów nie są zapisywane.
+
+Bez konfiguracji backendu dane kont i historii pozostają lokalnie w przeglądarce. Aby włączyć synchronizację między urządzeniami, skonfiguruj Supabase:
+
+1. Utwórz projekt Supabase.
+2. W panelu SQL uruchom skrypt `supabase/schema.sql`.
+3. Skopiuj `.env.example` do `.env`.
+4. Ustaw `REACT_APP_SUPABASE_URL` i `REACT_APP_SUPABASE_ANON_KEY`.
+5. Uruchom `npm run build` albo `npm run deploy:web`.
 
 ## Model Bezpieczeństwa
 

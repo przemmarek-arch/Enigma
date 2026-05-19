@@ -16,7 +16,7 @@ const formatSize = (size) => {
   return `${(size / (1024 * 1024)).toFixed(2)} MB`;
 };
 
-function HistoryPanel({ history, onClear }) {
+function HistoryPanel({ history, error, onClear }) {
   return (
     <section className="rounded-lg border border-white/70 bg-white/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur sm:p-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -37,6 +37,12 @@ function HistoryPanel({ history, onClear }) {
           Wyczyść historię
         </button>
       </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      )}
 
       {history.length === 0 ? (
         <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-4 py-10 text-center">
