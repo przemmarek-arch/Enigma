@@ -197,6 +197,15 @@ Bez konfiguracji backendu dane kont i historii pozostają lokalnie w przeglądar
 4. Ustaw `REACT_APP_SUPABASE_URL` i `REACT_APP_SUPABASE_ANON_KEY`.
 5. Uruchom `npm run build` albo `npm run deploy:web`.
 
+Dla wdrożenia GitHub Pages ustaw te same wartości jako GitHub Secrets:
+
+```bash
+gh secret set REACT_APP_SUPABASE_URL
+gh secret set REACT_APP_SUPABASE_ANON_KEY
+```
+
+Po ustawieniu secretów uruchom workflow **Deploy web app** albo wypchnij commit na `main`.
+
 ## Model Bezpieczeństwa
 
 Ogólne szyfrowanie plików używa:
