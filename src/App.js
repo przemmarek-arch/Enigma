@@ -3,73 +3,155 @@ import EncryptSection from './components/EncryptSection';
 import DecryptSection from './components/DecryptSection';
 import PDFSection from './components/PDFSection';
 import Header from './components/Header';
+import AuthPanel from './components/AuthPanel';
+import HistoryPanel from './components/HistoryPanel';
+import { addHistoryEntry, clearHistory, getHistory, getSessionUser, logoutUser } from './utils/authUtils';
+
+const tabs = [
+  {
+    id: 'encrypt',
+    label: 'Szyfruj',
+    description: 'AES-256 dla plików',
+    icon: (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V8a4 4 0 10-8 0v3m-1 0h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2z" />
+      </svg>
+    )
+  },
+  {
+    id: 'decrypt',
+    label: 'Odszyfruj',
+    description: 'Przywracanie plików',
+    icon: (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V8a4 4 0 118 0v3m-9 0h10a2 2 0 012 2v6a2 2 0 01-2 2H7a2 2 0 01-2-2v-6a2 2 0 012-2z" />
+      </svg>
+    )
+  },
+  {
+    id: 'pdf',
+    label: 'PDF',
+    description: 'Hasła i ochrona',
+    icon: (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V8.5L13.5 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 3v6h6" />
+      </svg>
+    )
+  },
+  {
+    id: 'history',
+    label: 'Historia',
+    description: 'Operacje użytkownika',
+    icon: (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v5l3 3m6-4a9 9 0 11-3.5-7.14" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 3v5h-5" />
+      </svg>
+    )
+  }
+];
 
 function App() {
+  const [user, setUser] = useState(() => getSessionUser());
   const [activeTab, setActiveTab] = useState('encrypt');
+  const [history, setHistory] = useState(() => {
+    const sessionUser = getSessionUser();
+    return sessionUser ? getHistory(sessionUser.id) : [];
+  });
+
+  const handleAuth = (nextUser) => {
+    setUser(nextUser);
+    setHistory(getHistory(nextUser.id));
+    setActiveTab('encrypt');
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setUser(null);
+    setHistory([]);
+    setActiveTab('encrypt');
+  };
+
+  const handleHistoryEvent = (entry) => {
+    if (!user) {
+      return;
+    }
+
+    const nextEntry = addHistoryEntry(user.id, entry);
+    setHistory((currentHistory) => [nextEntry, ...currentHistory].slice(0, 100));
+  };
+
+  const handleClearHistory = () => {
+    if (!user) {
+      return;
+    }
+
+    clearHistory(user.id);
+    setHistory([]);
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] text-zinc-950">
+        <Header />
+        <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <AuthPanel onAuth={handleAuth} />
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Tab Navigation */}
-        <div className="flex justify-center gap-4 mb-12 flex-wrap">
-          <button
-            onClick={() => setActiveTab('encrypt')}
-            className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
-              activeTab === 'encrypt'
-                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/50'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              Szyfruj
-            </span>
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('decrypt')}
-            className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
-              activeTab === 'decrypt'
-                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/50'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-              </svg>
-              Odszyfruj
-            </span>
-          </button>
+    <div className="min-h-screen bg-[#f5f5f7] text-zinc-950">
+      <Header user={user} onLogout={handleLogout} />
 
-          <button
-            onClick={() => setActiveTab('pdf')}
-            className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
-              activeTab === 'pdf'
-                ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/50'
-                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
-              </svg>
-              PDF 🔐
-            </span>
-          </button>
-        </div>
+      <main className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:px-8 lg:py-8">
+        <aside className="space-y-4">
+          <div className="rounded-lg border border-white/70 bg-white/80 p-2 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur">
+            <div className="grid gap-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`group flex min-h-[72px] items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
+                    activeTab === tab.id
+                      ? 'bg-zinc-950 text-white shadow-[0_12px_30px_rgba(24,24,27,0.22)]'
+                      : 'text-zinc-700 hover:bg-zinc-100'
+                  }`}
+                >
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    activeTab === tab.id ? 'bg-white/15 text-white' : 'bg-white text-zinc-600 shadow-sm'
+                  }`}>
+                    {tab.icon}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold">{tab.label}</span>
+                    <span className={`block text-xs ${activeTab === tab.id ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                      {tab.description}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* Content */}
-        <div className="max-w-4xl mx-auto">
-          {activeTab === 'encrypt' && <EncryptSection />}
-          {activeTab === 'decrypt' && <DecryptSection />}
-          {activeTab === 'pdf' && <PDFSection />}
+          <div className="rounded-lg bg-zinc-950 p-5 text-white shadow-[0_22px_55px_rgba(24,24,27,0.18)]">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-400">Bezpieczeństwo</p>
+            <h2 className="mt-3 text-xl font-semibold tracking-tight">Lokalne przetwarzanie plików</h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-300">
+              Pliki i hasła są obsługiwane na tym urządzeniu. Nie dodawaj ich do logów ani zrzutów ekranu.
+            </p>
+          </div>
+        </aside>
+
+        <div className="min-w-0">
+          {activeTab === 'encrypt' && <EncryptSection onHistoryEvent={handleHistoryEvent} />}
+          {activeTab === 'decrypt' && <DecryptSection onHistoryEvent={handleHistoryEvent} />}
+          {activeTab === 'pdf' && <PDFSection onHistoryEvent={handleHistoryEvent} />}
+          {activeTab === 'history' && <HistoryPanel history={history} onClear={handleClearHistory} />}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

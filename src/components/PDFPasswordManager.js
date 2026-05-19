@@ -3,7 +3,18 @@ import FileUpload from './FileUpload';
 import PasswordInput from './PasswordInput';
 import { addPDFPassword, removePDFPassword, changePDFPassword } from '../utils/pdfUtils';
 
-function PDFPasswordManager() {
+const alertStyles = {
+  success: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  error: 'border-red-200 bg-red-50 text-red-700'
+};
+
+const operations = [
+  { id: 'add', label: 'Dodaj hasło' },
+  { id: 'remove', label: 'Usuń hasło' },
+  { id: 'change', label: 'Zmień hasło' }
+];
+
+function PDFPasswordManager({ onHistoryEvent }) {
   const [file, setFile] = useState(null);
   const [operation, setOperation] = useState('add');
   const [password, setPassword] = useState('');
@@ -51,9 +62,16 @@ function PDFPasswordManager() {
       const result = await addPDFPassword(fileContent, password);
 
       if (result.success) {
-        downloadPDF(result.data, file.name, 'protected');
+        const outputName = downloadPDF(result.data, file.name, 'protected');
         setMessageType('success');
-        setMessage('Hasło zostało dodane do PDF! ✅');
+        setMessage('Hasło zostało dodane do PDF.');
+        onHistoryEvent?.({
+          action: 'pdf_add_password',
+          fileName: file.name,
+          outputName,
+          fileSize: file.size,
+          fileType: file.type || 'application/pdf'
+        });
         resetForm();
       } else {
         setMessageType('error');
@@ -86,9 +104,16 @@ function PDFPasswordManager() {
       const result = await removePDFPassword(fileContent, password);
 
       if (result.success) {
-        downloadPDF(result.data, file.name, 'unprotected');
+        const outputName = downloadPDF(result.data, file.name, 'unprotected');
         setMessageType('success');
-        setMessage('Hasło zostało usunięte z PDF! ✅');
+        setMessage('Hasło zostało usunięte z PDF.');
+        onHistoryEvent?.({
+          action: 'pdf_remove_password',
+          fileName: file.name,
+          outputName,
+          fileSize: file.size,
+          fileType: file.type || 'application/pdf'
+        });
         resetForm();
       } else {
         setMessageType('error');
@@ -133,9 +158,16 @@ function PDFPasswordManager() {
       const result = await changePDFPassword(fileContent, oldPassword, newPassword);
 
       if (result.success) {
-        downloadPDF(result.data, file.name, 'changed');
+        const outputName = downloadPDF(result.data, file.name, 'changed');
         setMessageType('success');
-        setMessage('Hasło zostało zmienione! ✅');
+        setMessage('Hasło zostało zmienione.');
+        onHistoryEvent?.({
+          action: 'pdf_change_password',
+          fileName: file.name,
+          outputName,
+          fileSize: file.size,
+          fileType: file.type || 'application/pdf'
+        });
         resetForm();
       } else {
         setMessageType('error');
@@ -150,15 +182,17 @@ function PDFPasswordManager() {
   };
 
   const downloadPDF = (data, originalName, suffix) => {
+    const outputName = `${originalName.replace('.pdf', '')}_${suffix}.pdf`;
     const blob = new Blob([data], { type: 'application/pdf' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${originalName.replace('.pdf', '')}_${suffix}.pdf`;
+    a.download = outputName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+    return outputName;
   };
 
   const resetForm = () => {
@@ -172,47 +206,29 @@ function PDFPasswordManager() {
 
   return (
     <div className="space-y-6">
-      {/* Operation Selector */}
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={() => setOperation('add')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            operation === 'add'
-              ? 'bg-green-500 text-white'
-              : 'bg-slate-600 text-gray-300 hover:bg-slate-500'
-          }`}
-        >
-          ➕ Dodaj hasło
-        </button>
-        <button
-          onClick={() => setOperation('remove')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            operation === 'remove'
-              ? 'bg-red-500 text-white'
-              : 'bg-slate-600 text-gray-300 hover:bg-slate-500'
-          }`}
-        >
-          ❌ Usuń hasło
-        </button>
-        <button
-          onClick={() => setOperation('change')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            operation === 'change'
-              ? 'bg-blue-500 text-white'
-              : 'bg-slate-600 text-gray-300 hover:bg-slate-500'
-          }`}
-        >
-          🔄 Zmień hasło
-        </button>
+      <div className="grid rounded-lg border border-zinc-200 bg-zinc-100 p-1 sm:grid-cols-3">
+        {operations.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setOperation(item.id)}
+            className={`min-h-10 rounded-md px-4 text-sm font-semibold transition ${
+              operation === item.id
+                ? 'bg-white text-zinc-950 shadow-sm'
+                : 'text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-slate-700/50 border border-red-500/30 rounded-lg p-6">
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-4 sm:p-6">
         <FileUpload onFileChange={handleFileChange} file={file} />
 
         {file && (
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 grid gap-4">
             {operation === 'add' && (
-              <>
+              <div className="grid gap-4 lg:grid-cols-2">
                 <PasswordInput
                   label="Nowe hasło"
                   value={password}
@@ -225,14 +241,14 @@ function PDFPasswordManager() {
                   onChange={setConfirmPassword}
                   placeholder="Powtórz hasło"
                 />
-              </>
+              </div>
             )}
 
             {operation === 'remove' && (
               <>
-                <div className="bg-yellow-900/30 border border-yellow-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-yellow-200 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <p className="flex items-start gap-3 text-sm leading-6 text-amber-800">
+                    <svg className="mt-0.5 h-5 w-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                     Wpisz hasło, aby usunąć ochronę z PDF
@@ -248,7 +264,7 @@ function PDFPasswordManager() {
             )}
 
             {operation === 'change' && (
-              <>
+              <div className="grid gap-4 lg:grid-cols-3">
                 <PasswordInput
                   label="Stare hasło"
                   value={oldPassword}
@@ -267,17 +283,13 @@ function PDFPasswordManager() {
                   onChange={setConfirmNewPassword}
                   placeholder="Powtórz nowe hasło"
                 />
-              </>
+              </div>
             )}
           </div>
         )}
 
         {message && (
-          <div className={`mt-6 p-4 rounded-lg ${
-            messageType === 'success'
-              ? 'bg-green-900/30 border border-green-500/30 text-green-200'
-              : 'bg-red-900/30 border border-red-500/30 text-red-200'
-          }`}>
+          <div className={`mt-6 rounded-lg border px-4 py-3 text-sm font-medium ${alertStyles[messageType] || alertStyles.error}`}>
             {message}
           </div>
         )}
@@ -289,15 +301,15 @@ function PDFPasswordManager() {
             else handleChangePassword();
           }}
           disabled={loading || !file}
-          className={`mt-6 w-full py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
+          className={`mt-6 flex w-full items-center justify-center gap-2 rounded-lg px-5 py-4 text-sm font-semibold transition ${
             loading || !file
-              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-lg hover:shadow-red-500/50'
+              ? 'cursor-not-allowed bg-zinc-200 text-zinc-400'
+              : 'bg-zinc-950 text-white shadow-[0_16px_36px_rgba(24,24,27,0.24)] hover:bg-zinc-800'
           }`}
         >
           {loading ? (
             <>
-              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -305,9 +317,9 @@ function PDFPasswordManager() {
             </>
           ) : (
             <>
-              {operation === 'add' && '➕ Dodaj hasło'}
-              {operation === 'remove' && '❌ Usuń hasło'}
-              {operation === 'change' && '🔄 Zmień hasło'}
+              {operation === 'add' && 'Dodaj hasło'}
+              {operation === 'remove' && 'Usuń hasło'}
+              {operation === 'change' && 'Zmień hasło'}
             </>
           )}
         </button>
